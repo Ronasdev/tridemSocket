@@ -5,8 +5,8 @@ require("dotenv").config();
 const cors = require('cors');
 
 const app = express();
-// app.use(cors({ origin: process.env.FRONT_URL }))
-app.use(cors({ origin: "*" }))
+app.use(cors({ origin: process.env.FRONT_URL }))
+// app.use(cors({ origin: "*" }))
 const server = http.createServer(app);
 const io = new Server(server);
 
