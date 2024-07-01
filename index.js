@@ -16,17 +16,17 @@ let onlineUsers = [];
 let newTrides = [];
 
 const addNewUser = (user, socketId) => {
-    console.log("online: user: ", user);
+    // console.log("online: user: ", user);
 
     !onlineUsers.some((user) => user.id === user?.id) &&
         onlineUsers.push({ ...user, socketId });
 
-    console.log("online:onlineUsers: ", onlineUsers);
+    // console.log("online:onlineUsers: ", onlineUsers);
 };
 
 const removeUser = (socketId) => {
     onlineUsers = onlineUsers.filter(user => user.socketId !== socketId)
-    console.log(`Utilisateur ${onlineUsers.firstname} déconnecté`);
+    // console.log(`Utilisateur ${onlineUsers.firstname} déconnecté`);
 };
 
 const getUser = (id) => {
@@ -37,25 +37,62 @@ const addNewTride = (tridaire, tride) => {
 }
 
 io.on('connection', (socket) => {
-    console.log('A user is connected');
+    // console.log('A user is connected');
 
     socket.on("newUser", (user) => {
-        console.log(`${user?.firstname} vient de se connecté`);
+        // console.log(`${user?.firstname} vient de se connecté`);
         addNewUser(user, socket.id);
     });
 
-    socket.on('sendNewTrideNotification', ({ tridaire, triand }) => {
-        const receiver = getUser(triand?._id);
-        console.log("triand: ", triand);
+    socket.on('sendNewTrideNotification', (data) => {
+        console.log("sendNewTrideNotification: ",data);
+
+        const receiver = getUser(data?.recipient);
         console.log("sendNewTrideNotif: ", receiver);
+        console.log("receiver: socketId ", receiver?.socketId);
         if (receiver) {
-            io.to(receiver?.socketId).emit("getNewTrideNotification", {
-                // tridaire,
-                // triand,
-                message: `${tridaire?.firstname} ${tridaire?.lastname} (le Tridaire ) vous a fait une demande de trid`
-            })
+            io.to(receiver?.socketId).emit("getNewTrideNotification", data)
         }
     });
+
+
+    socket.on('sendNewRouteAskedNotification', (data) => {
+        console.log("sendNewRouteAskedNotification: ", data);
+        const receiver = getUser(data?.recipient);
+        console.log("sendNewTrideNotif: ", receiver);
+        if (receiver) {
+            io.to(receiver?.socketId).emit("getNewRouteAskedNotification", data)
+        }
+    });
+
+    socket.on('sendResetRouteAskedNotification', (data) => {
+        console.log("sendResetRouteAskedNotification: ", data);
+        const receiver = getUser(data?.recipient);
+       
+        console.log("sendNewTrideNotif: ", receiver);
+        if (receiver) {
+            io.to(receiver?.socketId).emit("getResetRouteAskedNotification", data)
+        }
+    });
+    socket.on('sendAcceptRouteNotification', (data) => {
+        console.log("sendAcceptRouteNotification: ", data);
+        const receiver = getUser(data?.recipient);
+       
+        console.log("receiver: ", receiver);
+        if (receiver) {
+            io.to(receiver?.socketId).emit("getAcceptRouteNotification", data)
+        }
+    });
+    socket.on('sendRefuseRouteNotification', (data) => {
+        console.log("sendRefuseRouteNotification: ", data);
+        const receiver = getUser(data?.recipient);
+       
+        console.log("receiver: ", receiver);
+        if (receiver) {
+            io.to(receiver?.socketId).emit("getRefuseRouteNotification", data)
+        }
+    });
+
 
     // socket.on('sendText', ({ senderName, receiverName, text }) => {
     //     const receiver = getUser(receiverName);
