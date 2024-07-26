@@ -26,23 +26,21 @@ const addNewUser = (user, socketId) => {
 
 const removeUser = (socketId) => {
     onlineUsers = onlineUsers.filter(user => user.socketId !== socketId)
-    // console.log(`Utilisateur ${onlineUsers.firstname} déconnecté`);
+    console.log(`Un Utilisateur est déconnecté`);
 };
 
 const getUser = (id) => {
     return onlineUsers.find(user => user.id === id)
-}
-const addNewTride = (tridaire, tride) => {
-    newTrides.push({ tridaire, tride, socketId })
 }
 
 io.on('connection', (socket) => {
     // console.log('A user is connected');
 
     socket.on("newUser", (user) => {
-        // console.log(`${user?.firstname} vient de se connecté`);
+        console.log(`${user?.firstname} vient de se connecté`);
         addNewUser(user, socket.id);
     });
+    socket.emit('userConnected', onlineUsers);
 
     socket.on('sendNewTrideNotification', (data) => {
         console.log("sendNewTrideNotification: ",data);
@@ -94,13 +92,17 @@ io.on('connection', (socket) => {
     });
 
 
-    // socket.on('sendText', ({ senderName, receiverName, text }) => {
-    //     const receiver = getUser(receiverName);
-    //     io.to(receiver?.socketId).emit("getText", {
-    //         senderName,
-    //         text
-    //     })
-    // });
+    socket.on('messageChatSend', (data) => {
+        // const { data } = message;
+        console.log('messageChat', data);
+  
+        const receiverSocket = getUser(data?.receiver);
+        console.log("receiver: ", receiverSocket);
+        if (receiverSocket) {
+          io.to(receiverSocket.socketId).emit('messageChat', data);
+        }
+      });
+
 
     socket.on('disconnect', () => {
         removeUser(socket.id);
